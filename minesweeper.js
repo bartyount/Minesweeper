@@ -35,14 +35,14 @@ function init() {
     }, false);
 
     console.log(model.boardModel);    
-}
+} // End init
 
 // Mouseover Handler Hilites Tile Under Mouse
 function handleMouseOver(event) {
     view.hiliteTile(event.target);
 }
 
-// Mouseout handler un-hilites tile
+// Mouseout Handler un-hilites tile
 function handleMouseOut(event) {
     view.unHiliteTile(event.target);
 }
@@ -93,7 +93,7 @@ let model = {
         this.numHiddenTiles = numRows * numCols;
         
         
-        // Initialize Board Model with 0
+        // Initialize Board Model with 0s
         for (let row = 0; row < this.numRows; row++) {
             this.boardModel[row] = new Array(this.numCols).fill(0);
         }
@@ -101,10 +101,12 @@ let model = {
         for (let i = 0; i < this.numMines; i++) {
             let row = 0;
             let col = 0;
+            
+            // Find an un-mined coord to place a mine
             do {
                 row = Math.floor(Math.random() * this.numRows);
                 col = Math.floor(Math.random() * this.numCols);
-            } while (this.boardModel[row][col] === 9);
+            } while (this.boardModel[row][col] === MINE);
             this.boardModel[row][col] = MINE;
             
             // Increment Values Around Each Bomb
@@ -172,8 +174,23 @@ let view = {
     
     // Update Mine Count in Game Display Header
     updateMarkedMines: function() {
-        let numMineMarkersLeftId = document.getElementById("numMineMarkersLeft");
-        numMineMarkersLeftId.innerHTML = model.numMines - model.numFlags;
+        let numMineMarkersLeft = model.numMines - model.numFlags;
+        
+        // Convert number to string, split into array, then reverse
+        numMineMarkersLeft = numMineMarkersLeft.toString().split("").reverse();
+        
+        // Pad array with zeros if 10s or 100s digits dont exist
+        while (numMineMarkersLeft.length < 3) { numMineMarkersLeft.push("0") }
+        
+        // Create path to image that corresponds to the digits
+        let mineCount_100s = "Assets/led_" + numMineMarkersLeft[2] + ".png";
+        let mineCount_10s = "Assets/led_" + numMineMarkersLeft[1] + ".png";
+        let mineCount_1s = "Assets/led_" + numMineMarkersLeft[0] + ".png";
+        
+        // Update the HTML Marker Elements to reflect new count
+        document.getElementById("numMineMarkersLeft_100s").src = mineCount_100s;
+        document.getElementById("numMineMarkersLeft_10s").src = mineCount_10s;
+        document.getElementById("numMineMarkersLeft_1s").src = mineCount_1s;
     },
     
     // Hilite Tile
