@@ -1,6 +1,9 @@
 // Run init funtion after page is loaded
 window.onload = init;
 
+// Timer Value
+var timerCount = 0;
+
 // Enumerate Tile Types
 const EMPTY = 0;
 const MINE = 9;
@@ -34,8 +37,25 @@ function init() {
         handleMouseClick(event);
     }, false);
 
-    console.log(model.boardModel);    
+    console.log(model.boardModel); 
 } // End init
+
+// Timer
+var timerTick;
+function timerStart () {
+    timerCount = 0;
+    timerTick = setInterval(function() {
+        timerCount++; 
+        view.updateTimer(timerCount);
+    }, 1000);
+}
+function timerStop () {
+    clearInterval(timerTick);
+}
+function timerReset () {
+    timerCount = 0;
+}
+
 
 // Mouseover Handler Hilites Tile Under Mouse
 function handleMouseOver(event) {
@@ -49,6 +69,10 @@ function handleMouseOut(event) {
 
 // Mouse Click Handler
 function handleMouseClick(event) {
+    
+    // Start Timer
+    if(timerCount === 0) timerStart();
+    
     // Get Clicked Button and Send to Controller
     if (event.button === 0) controller.leftClickTile(event.target);
     if (event.button === 2) controller.rightClickTile(event.target);
@@ -193,6 +217,44 @@ let view = {
         document.getElementById("numMineMarkersLeft_1s").src = mineCount_1s;
     },
     
+    updateTimer: function(timerCount) {
+        console.log("time " + timerCount);
+
+        // Minutes
+        let min = Math.floor(timerCount/60);
+        if(min < 10) { 
+            min = "0" + min.toString();
+        } else if (min >= 99) {
+            min = "99";
+        } else {
+            min = min.toString();
+        }
+        
+        // Seconds
+        let sec = Math.floor(timerCount - (min * 60));
+        if(sec < 10) {
+            sec = "0" + sec.toString();
+        } else {
+            sec = sec.toString();
+        }
+        
+        min = min.split("").reverse();
+        sec = sec.split("").reverse();
+        console.log("time " + min + ":" + sec);
+        
+        // Create path to image that corresponds to the digits
+        let timer_min_10s = "Assets/led_" + min[1] + ".png";
+        let timer_min_1s = "Assets/led_" + min[0] + ".png";
+        let timer_sec_10s = "Assets/led_" + sec[1] + ".png";
+        let timer_sec_1s = "Assets/led_" + sec[0] + ".png";
+        
+        // Update the HTML Marker Elements to reflect new count
+        document.getElementById("timer_min_10s").src = timer_min_10s;
+        document.getElementById("timer_min_1s").src = timer_min_1s;
+        document.getElementById("timer_sec_10s").src = timer_sec_10s;
+        document.getElementById("timer_sec_1s").src = timer_sec_1s;
+    },
+    
     // Hilite Tile
     hiliteTile: function(tile) {
         if(tile.src.endsWith("hidden.png")) {
@@ -241,6 +303,7 @@ let view = {
     
     // BOOM
     boom: function() {
+        timerStop();
         let tileName;
         let tileIdList = document.getElementsByClassName("tile");
         for(let i = 0; i < tileIdList.length; i++) {
